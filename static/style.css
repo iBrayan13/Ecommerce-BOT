@@ -1,0 +1,41 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    background-color: darkgray;
+}
+
+.product-container {
+    float: left;
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin: 15px;
+}
+.product {
+    padding: 10px;
+    background-color: gray;
+    border-radius: 8px;
+    width: 95%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+.amount-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+}
+.amount-container button {
+    padding: 5px 10px;
+    background-color: gray;
+    border-radius: 5px;
+    border: 0;
+    cursor: pointer;
+}

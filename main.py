@@ -3,9 +3,8 @@ from decouple import config
 
 from src.commands.BasicCommands import start, menu_actions, web_app_data
 
+bot = Application.builder().token(config("API_KEY")).build()
 def main():
-    bot = Application.builder().token(config("API_KEY")).build()
-
     bot.add_handler(CommandHandler('start', start))
     bot.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, web_app_data))
     bot.add_handler(CallbackQueryHandler(menu_actions))

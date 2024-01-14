@@ -1,11 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+    <script src="https://unpkg.com/rxjs@^7/dist/bundles/rxjs.umd.min.js"></script>
+    <script type="text/javascript" src="../static/main.js"></script>
+    <link rel="stylesheet" href="../static/style.css">
     <title>Ecommerce BOT</title>
 </head>
+
 <body>
-    <h1>Hello. This is the shop.</h1>
+    <!-- SETTING AND DISPLAYING ALL THE AVAILABLE PRODUCTS -->
+    <div class="products-container" style="width: auto;">
+        {% for product in products %}
+            {% if product.stock > 0 %}
+
+            <div class="product-container">
+                <div class="product">
+                    <h3>{{ product.name }}</h3>
+                    <img style="width: 100%;" src="{{ product.img }}" />
+                </div>
+                <div class="amount-container">
+                    <button class="minusAmount-{{ product.id }}">-</button>
+                    <p class="amountOrder-{{ product.id }}">0</p>
+                    <button class="plusAmount-{{ product.id }}">+</button>
+                </div>
+            </div>
+
+            <script>
+                const amount{{ product.id }} = document.querySelector('.amountOrder-{{ product.id }}');
+                const amountShown{{ product.id }} = new rxjs.Subject();
+                amountShown{{ product.id }}.subscribe(number => {
+                    amount{{ product.id }}.textContent = number;
+                });
+            
+                const plusAmount{{ product.id }} = document.querySelector('.plusAmount-{{ product.id }}');
+                plusAmount{{ product.id }}.addEventListener('click', () => {
+                    console.log("click plus")
+                    if(parseInt(amount{{ product.id }}.textContent) < {{product.stock }}){
+                        amountShown{{ product.id }}.next(parseInt(amount{{ product.id }}.textContent) + 1)
+                    }
+                });
+            
+                const minusAmount{{ product.id }} = document.querySelector('.minusAmount-{{ product.id }}');
+                minusAmount{{ product.id }}.addEventListener('click', () => {
+                    console.log("click minus")
+                    if (parseInt(amount{{ product.id }}.textContent) > 0){
+                        amountShown{{ product.id }}.next(parseInt(amount{{ product.id }}.textContent) - 1)
+                    }
+                });
+            </script>
+        
+            {% endif %}
+        {% endfor %}
+    </div>
+
 </body>
+
 </html>
