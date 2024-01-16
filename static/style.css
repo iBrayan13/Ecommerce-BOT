@@ -7,6 +7,55 @@ body {
     background-color: darkgray;
 }
 
+#modal-container{
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+
+    background: linear-gradient(45deg, #2a74305e, #060f0638);
+}
+#shopping-popup{
+    background-color: black;
+    padding: 15px;
+    border: 1px solid green;
+    border-radius: 15px;
+    width: 80%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+#shopping-popup h2, #shopping-popup h1 {
+    font-size: 12px;
+    color: white;
+}
+.two-elements{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+}
+#closeModal{
+    color: green;
+    font-size: 12px;
+    font-weight: 600;
+    width: auto;
+    height: auto;
+
+    transition: all ease 0.2s;
+}
+#closeModal:hover{
+    cursor: pointer;
+}
+
 .product-container {
     float: left;
     width: 25%;
@@ -20,13 +69,28 @@ body {
     padding: 10px;
     background-color: gray;
     border-radius: 8px;
-    width: 95%;
+    width: calc(100% - 20px);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
 }
-.amount-container {
+.product-container button {
+    background-color: gray;
+    border-radius: 5px;
+    border: 0;
+    text-align: center;
+    color: wheat;
+    width: 95%;
+    font-size: 1.2rem;
+    padding: 8px 0;
+    transition: all ease 0.3s;
+}
+.product-container .addBtn:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
+/*.amount-container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -38,4 +102,4 @@ body {
     border-radius: 5px;
     border: 0;
     cursor: pointer;
-}
+}*/

@@ -22,7 +22,11 @@ def shop():
         params = {'chat_id': request.args.get('chat_id'), 'text': request.form.get("txt")}
         api.post(url, data=params)
     """
-    return render_template("index.html", products= products_modeled)
+    return render_template(
+        "index.html",
+        products= products_modeled,
+        shopping= []
+    )
 
 if __name__ == "__main__":
     app.run(debug= True, port=5000)
