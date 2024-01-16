@@ -4,7 +4,8 @@
 }
 
 body {
-    background-color: darkgray;
+    background-color: #000000;
+    color: white;
 }
 
 #modal-container{
@@ -23,9 +24,10 @@ body {
 #shopping-popup{
     background-color: black;
     padding: 15px;
-    border: 1px solid green;
+    border: 1px solid #1b551b;
     border-radius: 15px;
-    width: 80%;
+    width: calc(80% - 30px);
+    max-height: 85vh;
 
     display: flex;
     flex-direction: column;
@@ -35,7 +37,6 @@ body {
 }
 #shopping-popup h2, #shopping-popup h1 {
     font-size: 12px;
-    color: white;
 }
 .two-elements{
     display: flex;
@@ -55,6 +56,45 @@ body {
 #closeModal:hover{
     cursor: pointer;
 }
+.shopping-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    max-height: 78vh;
+}
+.shopping-product {
+    width: calc(95% - 20px);
+    padding: 10px;
+    border: 1px solid green;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+.shopping-product-img {
+    width: 100px;
+}
+.price-container {
+    width: 10%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: end;
+}
+.input__amount {
+    background: none;
+    color: white;
+    border: 0;
+    text-align: end;
+    display: flex;
+    width: 95%;
+}
 
 .product-container {
     float: left;
@@ -67,8 +107,9 @@ body {
 }
 .product {
     padding: 10px;
-    background-color: gray;
-    border-radius: 8px;
+    background-color: #0b3d0f25;
+    border: 1px solid #1b551b;
+    border-radius: 15px;
     width: calc(100% - 20px);
     display: flex;
     flex-direction: column;
@@ -76,9 +117,9 @@ body {
     gap: 8px;
 }
 .product-container button {
-    background-color: gray;
-    border-radius: 5px;
-    border: 0;
+    background-color: #0b3d0f25;
+    border: 1px solid #1b551b;
+    border-radius: 15px;
     text-align: center;
     color: wheat;
     width: 95%;
@@ -90,16 +131,3 @@ body {
     transform: scale(1.05);
     cursor: pointer;
 }
-/*.amount-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    width: 100%;
-}
-.amount-container button {
-    padding: 5px 10px;
-    background-color: gray;
-    border-radius: 5px;
-    border: 0;
-    cursor: pointer;
-}*/

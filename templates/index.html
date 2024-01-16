@@ -20,6 +20,7 @@
                 <h1>Shopping</h1>
                 <p id="closeModal">Close</p>
             </div>
+            <div class="shopping-container"></div>
         </div>
     </div>
 
@@ -90,8 +91,27 @@
                 addProduct{{ product.id }}.classList.remove("addBtn")
                 addProduct{{ product.id }}.textContent = "ADDED"
                 addProduct{{ product.id }}.classList.add("notAddBtn")
+
+                productObject{{ product.id }} = {
+                    id: {{ product.id }},
+                    name: "{{ product.name }}",
+                    price: {{ product.price }},
+                    img: "{{ product.img }}",
+                    stock: {{ product.stock }},
+                    amount: 1,
+                    html: `<div class="shopping-product">
+                        <img class="shopping-product-img" src={{ product.img }} />
+                        <h2>{{ product.name }}</h2>
+                        <div class="price-container">
+                            <p>$ {{ product.price }}</p>
+                            <input class="input__amount" id="amount{{ product.id }}" type="number" min="1" max="{{ product.stock }}" value="1"/>
+                        </div>
+                    </div>`,
+                }
                 
-                ordered.orderList.push({{ product.id }})
+                ordered.orderList.push(productObject{{ product.id }})
+                orderedLength++
+
                 addProduct{{ product.id }}.removeEventListener('click', event{{ product.id }})
             }
 
@@ -108,9 +128,21 @@
         let username = params.username
     
         let ordered = Alpine.reactive({ orderList: [] })
+        let orderedLength = -1
+        const shoppingContainer = document.querySelector(".shopping-container")
+
+        Alpine.effect(() => {
+            if (ordered.orderList.length > 0){
+                shoppingContainer.innerHTML += ordered.orderList[orderedLength].html
+            }
+        })
         
         Telegram.WebApp.ready();
-        Telegram.WebApp.MainButton.setText('ORDER').show().onClick(function () {
+        const webapp = Telegram.WebApp.MainButton.setText('ORDER').show()
+        webapp.onClick(function () {
+            for(let i = 0; i<ordered.orderList.length; i++){
+                ordered.orderList[i].amount = parseInt(document.getElementById('amount'+ordered.orderList[i].id).value)
+            }
             const data = JSON.stringify({order: ordered.orderList});
             Telegram.WebApp.sendData(data);
             Telegram.WebApp.close();
