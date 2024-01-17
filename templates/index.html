@@ -12,7 +12,9 @@
 </head>
 
 <body>
-    <button id="viewShopping">View Shopping</button>
+    <div class="shoppingCart">
+        <img id="viewShopping" src="../static/img/shopping_cart.png" />
+    </div>
 
     <div id="modal-container">
         <div id="shopping-popup">
@@ -89,7 +91,7 @@
                 e.preventDefault()
 
                 addProduct{{ product.id }}.classList.remove("addBtn")
-                addProduct{{ product.id }}.textContent = "ADDED"
+                addProduct{{ product.id }}.textContent = "REMOVE"
                 addProduct{{ product.id }}.classList.add("notAddBtn")
 
                 productObject{{ product.id }} = {

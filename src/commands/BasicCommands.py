@@ -7,6 +7,9 @@ from telegram import (
 )
 from telegram.ext import ContextTypes
 import json
+from src.models.order import Order
+from src.models.product import ProductOrdered
+from requests import api
 from decouple import config
 
 async def web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -30,13 +33,28 @@ async def web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     # Getting order
     msg = f"Hey {userdata['first_name']}! You have been ordered:\n"
     total = 0
+    global order
+    order = Order(username= userdata['username'], products= [])
+
     for product in data['order']:
+        # Setting message
         by_product = product['price'] * product['amount']
         total += by_product
         msg += f"\nProduct: {product['name']}\nPrice: ${product['price']}\nUnits: {product['amount']}\nTotal by this product: ${by_product}\n"
+
+        # Setting product object
+        order.products.append(ProductOrdered(
+            id= product['id'],
+            name= product['name'],
+            img= product['img'],
+            price= product['price'],
+            stock= product['stock'],
+            amount= product['amount']
+        ))
+
     msg += f"\nTotal: ${total}"
     
-    reply_btn = [InlineKeyboardButton('✅ CONFIRM ✅', callback_data='accepted')]
+    reply_btn = [InlineKeyboardButton('✅ CONFIRM ✅', callback_data= 'accepted')]
     await update.message.reply_text(msg, reply_markup=InlineKeyboardMarkup([reply_btn]))
 
 async def start(update: Update, context: ContextTypes):
@@ -57,5 +75,17 @@ async def start(update: Update, context: ContextTypes):
     
 async def menu_actions(update: Update, context: ContextTypes):
     query = update.callback_query
-    if query.data == "accepted":
+    if query.data == 'accepted':
+        msg = f"Hello Admin!\n@{order.username} has ordered:\n"
+        total = 0
+        for product in order.products:
+            by_product = product.price * product.amount
+            total += by_product
+            msg += f"\nProduct: {product.name}\nPrice: ${product.price}\nUnits: {product.amount}\nTotal by this product: ${by_product}\n"
+        msg += f"\nTotal: ${total}"
+
+        url = f'https://api.telegram.org/bot{config("API_KEY")}/sendMessage'
+        params = {'chat_id': config('ADMIN_CHAT_ID'), 'text': msg}
+        api.post(url, data=params)
+
         await query.message.reply_text("ORDER SENT ✅")

@@ -1,7 +1,5 @@
-from flask import Flask, request, render_template
-from src.models.products import Product
-from decouple import config
-from requests import api
+from flask import Flask, render_template
+from src.models.product import Product
 
 app = Flask(__name__)
 
@@ -16,12 +14,7 @@ def shop():
             price= 7.5,
             stock= 35
         ))
-    """
-    if request.method == "POST":
-        url = f'https://api.telegram.org/bot{config("API_KEY")}/sendMessage'
-        params = {'chat_id': request.args.get('chat_id'), 'text': request.form.get("txt")}
-        api.post(url, data=params)
-    """
+
     return render_template(
         "index.html",
         products= products_modeled,
