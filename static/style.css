@@ -6,6 +6,7 @@
 body {
     background-color: #000000;
     color: white;
+    overflow-x: hidden;
 }
 
 .shoppingCart {
@@ -68,7 +69,7 @@ body {
     cursor: pointer;
 }
 .shopping-container {
-    overflow-y: auto;
+    overflow-y: scroll;
     overflow-x: hidden;
     display: flex;
     flex-direction: column;

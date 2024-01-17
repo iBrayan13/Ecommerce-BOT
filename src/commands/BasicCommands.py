@@ -5,7 +5,7 @@ from telegram import (
     KeyboardButton,
     InlineKeyboardButton,
 )
-from telegram.ext import ContextTypes
+from telegram.ext import ContextTypes, CallbackContext
 import json
 from src.models.order import Order
 from src.models.product import ProductOrdered
@@ -76,16 +76,22 @@ async def start(update: Update, context: ContextTypes):
 async def menu_actions(update: Update, context: ContextTypes):
     query = update.callback_query
     if query.data == 'accepted':
-        msg = f"Hello Admin!\n@{order.username} has ordered:\n"
-        total = 0
-        for product in order.products:
-            by_product = product.price * product.amount
-            total += by_product
-            msg += f"\nProduct: {product.name}\nPrice: ${product.price}\nUnits: {product.amount}\nTotal by this product: ${by_product}\n"
-        msg += f"\nTotal: ${total}"
 
-        url = f'https://api.telegram.org/bot{config("API_KEY")}/sendMessage'
-        params = {'chat_id': config('ADMIN_CHAT_ID'), 'text': msg}
-        api.post(url, data=params)
+        if not order.confirmed:
+            msg = f"Hello Admin!\n@{order.username} has ordered:\n"
+            total = 0
+            for product in order.products:
+                by_product = product.price * product.amount
+                total += by_product
+                msg += f"\nProduct: {product.name}\nPrice: ${product.price}\nUnits: {product.amount}\nTotal by this product: ${by_product}\n"
+            msg += f"\nTotal: ${total}"
 
-        await query.message.reply_text("ORDER SENT ✅")
+            url = f'https://api.telegram.org/bot{config("API_KEY")}/sendMessage'
+            params = {'chat_id': config('ADMIN_CHAT_ID'), 'text': msg}
+            api.post(url, data=params)
+
+            await query.message.reply_text("ORDER SENT ✅")
+            order.confirmed = True
+        
+        else:
+            await query.message.reply_text("You already sent that order.")

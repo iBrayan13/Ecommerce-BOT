@@ -2,12 +2,15 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Mess
 from decouple import config
 
 from src.commands.BasicCommands import start, menu_actions, web_app_data
+from src.commands.AdminCommands import admin
 
 bot = Application.builder().token(config("API_KEY")).build()
 def main():
     bot.add_handler(CommandHandler('start', start))
     bot.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, web_app_data))
     bot.add_handler(CallbackQueryHandler(menu_actions))
+
+    bot.add_handler(CommandHandler('admin', admin))
 
     bot.run_polling()
 
