@@ -1,45 +1,26 @@
 from src.models.product import Product
-from src.database.db_sqlite import get_connect
+import csv
 
 class ProductService:
-    conexion, cursor = get_connect()
-
-    # TODO: delete this classmethod
-    @classmethod
-    def set_proof_values(cls) -> bool:
-        try:
-            for i in range(1, 16):
-                cls.cursor.execute("INSERT INTO products (name, img, price, stock) VALUES (?, ?, ?, ?)", (f"product-{i}", "https://exclusiveshopperu.com/wp-content/uploads/nike-sb-dunk-low-travis-scott-2.jpg", 6.5, 40))
-            cls.conexion.commit()
-
-            cls.cursor.execute("SELECT id FROM products LIMIT 1")
-            if not cls.cursor.fetchone():
-                return False
-            
-            return True
-        
-        except Exception as ex:
-            print(f"{type(ex)}: {ex}")
-            return False
+    csv_file = 'products.csv'
 
     @classmethod
     def get_all_products(cls) -> list[Product]:
         try:
             products = []
 
-            cls.cursor.execute("SELECT id, name, img, price, stock FROM products")
-            rows = cls.cursor.fetchall()
-            if not rows:
-                return []
+            with open(cls.csv_file, 'r', newline='') as file:
+                reader = csv.reader(file)
+                next(reader)
 
-            for row in rows:
-                products.append(Product(
-                    id= row[0],
-                    name= row[1],
-                    img= row[2],
-                    price= row[3],
-                    stock= row[4]
-                ))
+                for row in reader:
+                    products.append(Product(
+                        id=int(row[0]),
+                        name=row[1],
+                        img=row[2],
+                        price=float(row[3]),
+                        stock=int(row[4])
+                    ))
             
             return products
         
@@ -48,20 +29,23 @@ class ProductService:
             return []
         
     @classmethod
-    def get_a_products(cls, id: int) -> Product:
+    def get_a_product(cls, id: int) -> Product:
         try:
-            cls.cursor.execute("SELECT id, name, img, price, stock FROM products WHERE id = ?", (id,))
-            row = cls.cursor.fetchone()
-            if not row:
-                return None
+            with open(cls.csv_file, 'r', newline='') as file:
+                reader = csv.reader(file)
+                next(reader)
 
-            return Product(
-                id= row[0],
-                name= row[1],
-                img= row[2],
-                price= row[3],
-                stock= row[4]
-            )
+                for row in reader:
+                    if int(row[0]) == id:
+                        return Product(
+                            id=int(row[0]),
+                            name=row[1],
+                            img=row[2],
+                            price=float(row[3]),
+                            stock=int(row[4])
+                        )
+            
+            return None
         
         except Exception as ex:
             print(f"{type(ex)}: {ex}")
@@ -70,8 +54,10 @@ class ProductService:
     @classmethod
     def reset_products(cls) -> bool:
         try:
-            cls.cursor.execute("DELETE FROM products")
-            cls.conexion.commit()
+            with open(cls.csv_file, 'w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(['id', 'name', 'img', 'price', 'stock'])
+
             return True
         
         except Exception as ex:
@@ -81,45 +67,106 @@ class ProductService:
     @classmethod
     def add_product(cls, product: Product) -> Product:
         try:
-            sql = "INSERT INTO products (name, img, price, stock) VALUES (?, ?, ?, ?)"
-            product_data = (product.name, product.img, product.price, product.stock)
-            cls.cursor.execute(sql, product_data)
-            if not cls.cursor.rowcount > 0:
-                return None
-            cls.conexion.commit()
+            product.id = len(cls.get_all_products()) + 1
 
-            cls.cursor.execute(
-                """SELECT id, name, img, price, stock
-                FROM products
-                WHERE name = ? AND img = ? AND price = ? AND stock = ?
-                LIMIT 1""",
-                product_data
-            )
-            row = cls.cursor.fetchone()
-            if not row:
-                return None
+            with open(cls.csv_file, 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow([product.id, product.name, product.img, product.price, product.stock])
             
-            return Product(
-                id= row[0],
-                name= row[1],
-                img= row[2],
-                price= row[3],
-                stock= row[4]
-            )
+            return product
 
         except Exception as ex:
             print(f"{type(ex)}: {ex}")
             return None
+
+    @classmethod
+    def change_stock(cls, id: int, new_stock: int) -> bool:
+        try:
+            rows = []
+            with open(cls.csv_file, 'r', newline='') as file:
+                reader = csv.reader(file)
+                header = next(reader)
+                rows.append(header)
+
+                for row in reader:
+                    if int(row[0]) == id:
+                        row[4] = new_stock
+                    rows.append(row)
+
+            with open(cls.csv_file, 'w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows(rows)
+
+            return True
+
+        except Exception as ex:
+            print(f"{type(ex)}: {ex}")
+            return False
+    
+    @classmethod
+    def change_price(cls, id: int, new_price: float) -> bool:
+        try:
+            rows = []
+            with open(cls.csv_file, 'r', newline='') as file:
+                reader = csv.reader(file)
+                header = next(reader)
+                rows.append(header)
+
+                for row in reader:
+                    if int(row[0]) == id:
+                        row[3] = new_price
+                    rows.append(row)
+
+            with open(cls.csv_file, 'w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows(rows)
+
+            return True
+
+        except Exception as ex:
+            print(f"{type(ex)}: {ex}")
+            return False
+        
+    @classmethod
+    def change_name(cls, id: int, new_name: str) -> bool:
+        try:
+            rows = []
+            with open(cls.csv_file, 'r', newline='') as file:
+                reader = csv.reader(file)
+                header = next(reader)
+                rows.append(header)
+
+                for row in reader:
+                    if int(row[0]) == id:
+                        row[1] = new_name
+                    rows.append(row)
+
+            with open(cls.csv_file, 'w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows(rows)
+
+            return True
+
+        except Exception as ex:
+            print(f"{type(ex)}: {ex}")
+            return False
         
     @classmethod
     def delete_product(cls, id: int) -> bool:
         try:
-            cls.cursor.execute("DELETE FROM products WHERE id = ?", (id,))
-            cls.conexion.commit()
+            rows = []
+            with open(cls.csv_file, 'r', newline='') as file:
+                reader = csv.reader(file)
+                header = next(reader)
+                rows.append(header)
 
-            cls.cursor.execute("SELECT id FROM products WHERE id = ? LIMIT 1", (id,))
-            if cls.cursor.fetchone():
-                return False
+                for row in reader:
+                    if int(row[0]) != id:
+                        rows.append(row)
+
+            with open(cls.csv_file, 'w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows(rows)
             
             return True
 
