@@ -5,12 +5,15 @@ from telegram import (
     KeyboardButton,
     InlineKeyboardButton,
 )
-from telegram.ext import ContextTypes, CallbackContext
+from telegram.ext import ContextTypes
 import json
 from src.models.order import Order
 from src.models.product import ProductOrdered
+from src.services.ProductServices import ProductService
 from requests import api
 from decouple import config
+
+product_service = ProductService()
 
 async def web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     data = json.loads(update.effective_message.web_app_data.data)
@@ -36,29 +39,38 @@ async def web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     global order
     order = Order(username= userdata['username'], products= [])
 
+    ids = []
     for product in data['order']:
-        # Setting message
-        by_product = product['price'] * product['amount']
-        total += by_product
-        msg += f"\nProduct: {product['name']}\nPrice: ${product['price']}\nUnits: {product['amount']}\nTotal by this product: ${by_product}\n"
+        # Verifying order product list
+        if not int(product['id']) in ids:
 
-        # Setting product object
-        order.products.append(ProductOrdered(
-            id= product['id'],
-            name= product['name'],
-            img= product['img'],
-            price= product['price'],
-            stock= product['stock'],
-            amount= product['amount']
-        ))
+            # Setting message
+            by_product = product['price'] * product['amount']
+            total += by_product
+            msg += f"\nProduct: {product['name']}\nPrice: ${product['price']}\nUnits: {product['amount']}\nTotal by this product: ${by_product}\n"
 
+            # Setting product object
+            order.products.append(ProductOrdered(
+                id= product['id'],
+                name= product['name'],
+                img= product['img'],
+                price= product['price'],
+                stock= product['stock'],
+                amount= product['amount']
+            ))
+            ids.append(int(product['id']))
+
+    date = order.date
     msg += f"\nTotal: ${total}"
+    msg += f"\nDate: {date.year}/{date.month}/{date.day} at {date.hour}:{date.minute} UTC"
     
-    reply_btn = [InlineKeyboardButton('✅ CONFIRM ✅', callback_data= 'accepted')]
-    await update.message.reply_text(msg, reply_markup=InlineKeyboardMarkup([reply_btn]))
+    reply_btn = [InlineKeyboardButton('✅ CONFIRM ✅', callback_data= 'accepted'), InlineKeyboardButton('❌ CANCEL ❌', callback_data= 'canceled')]
+    bot_message = await update.message.reply_text(msg, reply_markup=InlineKeyboardMarkup([reply_btn]))
+    context.user_data['message_to_delete'] = bot_message.message_id
 
 async def start(update: Update, context: ContextTypes):
     userdata = update.message.chat.to_dict()
+    print(userdata['id'])
     menu_main = [
         [KeyboardButton(
             'Shop',
@@ -73,25 +85,53 @@ async def start(update: Update, context: ContextTypes):
 
     await update.message.reply_text(msg, reply_markup= reply_markup)
     
-async def menu_actions(update: Update, context: ContextTypes):
+async def menu_actions(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     if query.data == 'accepted':
 
-        if not order.confirmed:
-            msg = f"Hello Admin!\n@{order.username} has ordered:\n"
-            total = 0
-            for product in order.products:
-                by_product = product.price * product.amount
-                total += by_product
-                msg += f"\nProduct: {product.name}\nPrice: ${product.price}\nUnits: {product.amount}\nTotal by this product: ${by_product}\n"
-            msg += f"\nTotal: ${total}"
-
-            url = f'https://api.telegram.org/bot{config("API_KEY")}/sendMessage'
-            params = {'chat_id': config('ADMIN_CHAT_ID'), 'text': msg}
-            api.post(url, data=params)
-
-            await query.message.reply_text("ORDER SENT ✅")
-            order.confirmed = True
+        message_id = context.user_data.get('message_to_delete')
+        if not message_id:
+            raise TimeoutError
         
-        else:
+        bot = update.get_bot()
+        await bot.delete_message(chat_id= query.message.chat_id, message_id= int(message_id))
+
+        if order.canceled:
             await query.message.reply_text("You already sent that order.")
+            raise TimeoutError
+
+        msg = ""
+        msg_admin = ""
+        total = 0
+        for product in order.products:
+            by_product = product.price * product.amount
+            total += by_product
+
+            msg += f"\nProduct: {product.name}\nPrice: ${product.price}\nUnits: {product.amount}\nTotal by this product: ${by_product}\n"
+            msg_admin += f"\nProduct ID: {product.id}\nProduct: {product.name}\nPrice: ${product.price}\nUnits: {product.amount}\nTotal by this product: ${by_product}\n"
+
+            product_service.change_stock(product.id, int(product.stock - product.amount))
+
+        msg += f"\nTotal: ${total}"
+        msg_admin += f"\nTotal: ${total}"
+
+        date = order.date
+        msg += f"\nDate: {date.year}/{date.month}/{date.day} at {date.hour}:{date.minute} UTC"
+        msg_admin += f"\nDate: {date.year}/{date.month}/{date.day} at {date.hour}:{date.minute} UTC"
+
+        url = f'https://api.telegram.org/bot{config("API_KEY")}/sendMessage'
+        params = {'chat_id': config('ADMIN_CHAT_ID'), 'text': f"Hello Admin!\n@{order.username} has ordered:\n{msg_admin}"}
+        api.post(url, data=params)
+
+        await query.message.reply_text(f"✅ ORDER SENT TO ADMIN\n{msg}")
+        order.canceled = True
+    
+    if query.data == 'canceled':
+        order.canceled = True
+
+        message_id = context.user_data.get('message_to_delete')
+        if not message_id:
+            raise TimeoutError
+        
+        bot = update.get_bot()
+        await bot.delete_message(chat_id= query.message.chat_id, message_id= int(message_id))

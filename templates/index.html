@@ -21,6 +21,7 @@
                 <h1>Shopping</h1>
                 <p id="closeModal">Close</p>
             </div>
+            <button id="clearShopping">CLEAR SHOPPING</button>
             <div class="shopping-container"></div>
         </div>
     </div>
@@ -32,10 +33,13 @@
 
         <div class="product-container">
             <div class="product">
-                <h3>{{ product.name }}</h3>
+                <div class="product-desc">
+                    <h3>{{ product.name }}</h3>
+                    <h3>${{ product.price }}</h3>
+                </div>
                 <img style="width: 100%;" src="{{ product.img }}" />
             </div>
-            <button class="addBtn addProduct{{ product.id }}">ADD</button>
+            <button class="addBtn addProduct{{ product.id }}"></button>
         </div>
     
         {% endif %}
@@ -83,44 +87,67 @@
         setViewShopping()
         setCloseBtn()
 
-        {% for product in products %}
-        {% if product.stock > 0 %}
+        const setAddBtns = () => {
 
-            const event{{ product.id }} = e => {
-                e.preventDefault()
+            {% for product in products %}
+            {% if product.stock > 0 %}
 
-                addProduct{{ product.id }}.classList.remove("addBtn")
-                addProduct{{ product.id }}.textContent = "REMOVE"
-                addProduct{{ product.id }}.classList.add("notAddBtn")
+                const event{{ product.id }} = e => {
+                    e.preventDefault()
 
-                productObject{{ product.id }} = {
-                    id: {{ product.id }},
-                    name: "{{ product.name }}",
-                    price: {{ product.price }},
-                    img: "{{ product.img }}",
-                    stock: {{ product.stock }},
-                    amount: 1,
-                    html: `<div class="shopping-product product{{ product.id }}">
-                        <img class="shopping-product-img" src={{ product.img }} />
-                        <h2>{{ product.name }}</h2>
-                        <div class="price-container">
-                            <p>$ {{ product.price }}</p>
-                            <input class="input__amount" id="amount{{ product.id }}" type="number" min="1" max="{{ product.stock }}" value="1"/>
-                        </div>
-                    </div>`,
+                    addProduct{{ product.id }}.classList.remove("addBtn")
+                    addProduct{{ product.id }}.textContent = "ADDED"
+                    addProduct{{ product.id }}.classList.add("notAddBtn")
+                    
+                    productObject{{ product.id }} = {
+                        id: {{ product.id }},
+                        name: "{{ product.name }}",
+                        price: {{ product.price }},
+                        img: "{{ product.img }}",
+                        stock: {{ product.stock }},
+                        amount: 1,
+                        html: `<div class="shopping-product product{{ product.id }}">
+                            <img class="shopping-product-img" src={{ product.img }} />
+                            <h3>{{ product.name }}</h3>
+                            <div class="price-container">
+                                <h3>$ {{ product.price }}</h3>
+                                <input class="input__amount" id="amount{{ product.id }}" type="number" min="1" max="{{ product.stock }}" value="1"/>
+                            </div>
+                        </div>`,
+                    }
+
+                    orderedSet.set.add(productObject{{ product.id }})
+                    orderedLength++
+
+                    addProduct{{ product.id }}.removeEventListener('click', event{{ product.id }})
                 }
-                
-                ordered.orderList.push(productObject{{ product.id }})
-                orderedLength++
 
-                addProduct{{ product.id }}.removeEventListener('click', event{{ product.id }})
-            }
+                const addProduct{{ product.id }} = document.querySelector(".addProduct{{ product.id }}")
+                addProduct{{ product.id }}.addEventListener('click', event{{ product.id }})
+                addProduct{{ product.id }}.textContent = "ADD"
 
-            const addProduct{{ product.id }} = document.querySelector(".addProduct{{ product.id }}")
-            addProduct{{ product.id }}.addEventListener('click', event{{ product.id }})
+                if(addProduct{{ product.id }}.classList.contains("notAddBtn")){
+                    addProduct{{ product.id }}.classList.remove("notAddBtn")
+                    addProduct{{ product.id }}.classList.add("addBtn")
+                }
 
-        {% endif %}
-        {% endfor %}
+            {% endif %}
+            {% endfor %}
+        }
+        setAddBtns()
+
+        const setClearShopping = () => {
+            const clearShopping = document.getElementById('clearShopping')
+            clearShopping.addEventListener('click', e => {
+                e.preventDefault()
+        
+                ordered.orderList = []
+                orderedLength = -1
+                orderedSet.set.clear()
+                setAddBtns()
+            })
+        }
+        setClearShopping()
 
         const params = new Proxy(new URLSearchParams(window.location.search), {
             get: (searchParams, prop) => searchParams.get(prop)
@@ -129,12 +156,17 @@
         let username = params.username
     
         let ordered = Alpine.reactive({ orderList: [] })
+        let orderedSet = Alpine.reactive({ set: new Set() })
         let orderedLength = -1
         const shoppingContainer = document.querySelector(".shopping-container")
 
         Alpine.effect(() => {
+            ordered.orderList = Array.from(orderedSet.set)
             if (ordered.orderList.length > 0){
                 shoppingContainer.innerHTML += ordered.orderList[orderedLength].html
+            }
+            else {
+                shoppingContainer.innerHTML = ""
             }
         })
         
