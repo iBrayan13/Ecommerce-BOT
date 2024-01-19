@@ -67,6 +67,7 @@ class ProductService:
     @classmethod
     def add_product(cls, product: Product) -> Product:
         try:
+            product.name = product.name.replace("-", " ")
             product.id = len(cls.get_all_products()) + 1
 
             with open(cls.csv_file, 'a', newline='') as file:
@@ -130,6 +131,7 @@ class ProductService:
     @classmethod
     def change_name(cls, id: int, new_name: str) -> bool:
         try:
+            name = new_name.replace("-", " ")
             rows = []
             with open(cls.csv_file, 'r', newline='') as file:
                 reader = csv.reader(file)
@@ -138,7 +140,7 @@ class ProductService:
 
                 for row in reader:
                     if int(row[0]) == id:
-                        row[1] = new_name
+                        row[1] = name
                     rows.append(row)
 
             with open(cls.csv_file, 'w', newline='') as file:

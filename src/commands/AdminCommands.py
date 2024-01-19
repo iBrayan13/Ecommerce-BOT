@@ -38,11 +38,11 @@ async def admin(update: Update, context: CallbackContext):
     msg += '--- ADMIN COMMANDS ---\n\n'
     msg += '/admin_inventory password --> See all the products in database.\n\n'
     msg += '/admin_reset_inventory password --> Delete all the products in database.\n\n'
-    msg += '/admin_add_product password product_name product_img_url product_price product_stock --> Add a product into database.\n\n'
+    msg += '/admin_add_product password product_name product_img_url product_price product_stock --> Add a product into database (Remember do not use spaces in produc_name, always use "-" to indicate space).\n\n'
     msg += '/admin_get_product password product_id --> See the product information by its ID.\n\n'
     msg += '/admin_product_change_stock password product_id new_product_stock --> Update product stock on database.\n\n'
     msg += '/admin_product_change_price password product_id new_product_price --> Update product price on database (If your input is decimal use "." not ",").\n\n'
-    msg += '/admin_product_change_name password product_id new_product_name --> Update product name on database.\n\n'
+    msg += '/admin_product_change_name password product_id new_product_name --> Update product name on database (Remember do not use spaces in produc_name, always use "-" to indicate space).\n\n'
     msg += '/admin_delete_product password product_id --> Delete a product from database.\n\n'
     msg += '--- ADMIN COMMANDS ---'
 
